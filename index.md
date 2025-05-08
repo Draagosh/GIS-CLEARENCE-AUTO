@@ -1,39 +1,41 @@
 ---
-title: Curățarea datelor în baza geodatabase - Script delete_validate_records.py
+layout: default # Or your preferred Jekyll layout
+title: "🧹 Curățarea datelor în baza geodatabase: Script delete_validate_records.py"
+tags: [arcgis, script, curățare-date, python, geodatabase]
+# Add any other Jekyll frontmatter variables you use, e.g., 'excerpt', 'author', etc.
+# For a banner image, you might need to handle this in your layout or use a standard image tag below.
 ---
 
-# 🧹 Curățarea datelor în baza geodatabase
-## Script: delete_validate_records.py
-
-![](assets/database_cleanup.png)
-
----
+<!-- ![database_cleanup.png](assets/images/database_cleanup.png) -->
+<!-- Note: Adjust image paths based on your Jekyll site's asset structure. -->
+<!-- You might place images in an 'assets/images' folder. -->
 
 ## 🎯 Ce face acest script?
 
-> **Sfat:** Scop principal
+> **Scop principal**
 > Acest script identifică și șterge **înregistrări invalide** din baza de date geografice pentru:
 > - Clădiri
 > - Intrări
 > - Locuințe
+<span id="scopPrincipal"></span>
 
 ---
 
 ## 🤔 De ce avem nevoie de acest script?
 
-> **Informație:** Beneficii
+> **Beneficii**
 > - Elimină clădirile abandonate sau nelocuite
 > - Curăță datele pentru analize statistice mai precise
 > - Marchează cazuri problematice pentru verificare manuală
 
-> **Exemplu:**
+> **Exemplu**
 > Clădirile cu stare '5' (demolată) nu ar trebui să apară în analizele statistice ale populației.
 
 ---
 
 ## ⚙️ Cum funcționează?
 
-> **Rezumat:** Proces
+> **Proces**
 > Script-ul folosește pachetul `arcpy` pentru a:
 >
 > 1. Colecta datele din tabelele GDB
@@ -47,6 +49,17 @@ bld_details, ent_details, dw_details = gather_data(...)
 blds_to_delete, ents_to_delete, dws_to_delete = identify_features(...)
 execute_changes(blds_to_delete, ents_to_delete, dws_to_delete, ...)
 ```
+
+<!-- 
+Note for Mermaid diagrams:
+To render Mermaid diagrams in Jekyll, you'll typically need a plugin like 'jekyll-mermaid' 
+or 'jekyll-diagrams'. Add it to your Gemfile and _config.yml.
+Example _config.yml:
+  plugins:
+    - jekyll-mermaid
+  mermaid:
+    theme: default 
+-->
 
 ```mermaid
 sequenceDiagram
@@ -68,17 +81,27 @@ sequenceDiagram
 
 ## 📊 Date utilizate
 
-> **Informație:** Surse de date
+> **Surse de date**
 > Scriptul lucrează cu aceste 3 seturi de date în Geodatabase:
 
-| Tip | Nume în GDB | Descriere |
-|-----|-------------|-----------|
-| Feature Class | `OR_bld` | Clădiri |
-| Feature Class | `OR_ent` | Intrări |
-| Tabel | `OR_dw` | Locuințe |
+| Tip           | Nume în GDB | Descriere |
+|---------------|-------------|-----------|
+| Feature Class | `OR_bld`    | Clădiri   |
+| Feature Class | `OR_ent`    | Intrări   |
+| Tabel         | `OR_dw`     | Locuințe  |
 
-> **Citat:** Notă importantă
+> **Notă importantă**
 > Scriptul presupune că relațiile dintre tabele sunt stabilite corect prin câmpuri GUID.
+
+<!-- 
+Note for LaTeX Math:
+To render LaTeX in Jekyll, you can use MathJax or KaTeX. 
+Include the necessary scripts in your layout file (e.g., _layouts/default.html).
+For MathJax, you might add:
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+-->
 
 $$\text{Clădire} \xrightarrow{\text{1:n}} \text{Intrare} \xrightarrow{\text{1:n}} \text{Locuință}$$
 
@@ -113,7 +136,7 @@ erDiagram
 
 ## 🔑 Câmpuri importante
 
-> **Informație:** Structura datelor
+> **Structura datelor**
 > 
 > - **ID-uri de legătură**: 
 >   - `bld_guid_id`
@@ -130,14 +153,14 @@ erDiagram
 <details>
 <summary>Valori pentru BLD_status</summary>
 
-| Valoare | Descriere |
-|---------|-----------|
-| 1 | În folosință |
-| 2 | În construcție |
-| 3 | Abandonată |
-| 4 | Parțial demolată |
-| 5 | Demolată |
-| 6 | Distrusă |
+| Valoare | Descriere        |
+|---------|------------------|
+| 1       | În folosință     |
+| 2       | În construcție   |
+| 3       | Abandonată       |
+| 4       | Parțial demolată |
+| 5       | Demolată         |
+| 6       | Distrusă         |
 
 </details>
 
@@ -165,7 +188,7 @@ flowchart TD
 
 ```mermaid
 pie
-    title "Situații posibile pentru înregistrări"
+    title "Situații posibile pentru înregistrări (exemplu)"
     "Șterse - Regula 1" : 35
     "Șterse - Regula 2" : 25
     "Șterse - Regula 3" : 15
@@ -177,12 +200,12 @@ pie
 
 ## 🏚️ Regula 1: Locuințe nelocuite
 
-> **Notă:** Condiția 1
+> **Condiția 1**
 > - **Verifică**: Clădiri unde suma `dw_cnt_persons` este zero
 > - **Declanșator**: Cel puțin o locuință are `DW_purpose = 3` SAU `DW_vacant = 3`
 > - **Acțiune**: Șterge clădirea, toate intrările și toate locuințele asociate
 
-> **Succes:** Beneficiu
+> **Beneficiu**
 > Eliminarea completă a înregistrărilor pentru clădiri nelocuite cu statut special.
 
 Formal, o clădire $B$ va fi ștearsă dacă:
@@ -212,12 +235,12 @@ stateDiagram-v2
 
 ## 🏗️ Regula 2: Clădiri cu stare specială
 
-> **Notă:** Condiția 2
+> **Condiția 2**
 > - **Verifică**: Clădiri unde `BLD_status` este '3', '4', '5', sau '6'
 > - **Cazul 2.1**: Dacă `dw_cnt_persons` total = 0 → Șterge tot
 > - **Cazul 2.2**: Dacă `dw_cnt_persons` > 0 → Marchează doar intrările cu `error = 1`
 
-> **Întrebare:** De ce marcăm cu error=1?
+> **De ce marcăm cu error=1?**
 > Acest caz indică o discrepanță: o clădire este marcată ca abandonată/demolată, dar datele arată persoane locuind acolo.
 > Trebuie verificat manual dacă:
 > - Starea clădirii este greșită
@@ -233,25 +256,25 @@ $$\text{status\_special}(B) = \begin{cases}
 
 ## 🏢 Regula 3: Clădiri cu utilizare specială
 
-> **Notă:** Condiția 3
+> **Condiția 3**
 > - **Verifică**: Clădiri unde `BLD_use` este '5'
 > - **Declanșator**: `dw_cnt_persons` total = 0
 > - **Acțiune**: Șterge clădirea, toate intrările și toate locuințele asociate
 
-> **Pericol:** Atenție
+> **Atenție**
 > Valoarea `BLD_use = 5` reprezintă o utilizare incompatibilă cu locuirea!
 
 ---
 
 ## 🧽 Curățare finală a locuințelor
 
-> **Important:** Regula finală
+> **Regula finală**
 > După aplicarea regulilor 1-3, scriptul mai face o verificare:
 > - Șterge orice locuință rămasă care are:
 >   - (`DW_purpose = 3` SAU `DW_vacant = 3`) 
 >   - ȘI `dw_cnt_persons = 0`
 
-> **Bug/Problemă rezolvată:**
+> **Problemă rezolvată**
 > Această curățare finală elimină locuințele nelocuite care ar fi putut rămâne după aplicarea regulilor anterioare.
 
 ```mermaid
@@ -268,7 +291,7 @@ flowchart LR
 
 ## 🛠️ Procesul tehnic
 
-> **Rezumat:** Etape de execuție
+> **Etape de execuție**
 > 
 > 1. **Inițializare**: Verifică existența GDB, straturilor și tabelelor
 > 2. **Colectare date**: Citește datele relevante în dicționare Python
@@ -278,9 +301,8 @@ flowchart LR
 Calcularea persoanelor pentru o clădire:
 $$\text{total\_persons}(B) = \sum_{d \in D_B} \text{persons}(d)$$
 
-
 <details>
-<summary>Cod Python pentru execuția schimbărilor</summary>
+<summary>Cod Python pentru execuția schimbărilor (fragment)</summary>
 
 ```python
 def execute_changes(arcpy, bld_path, ent_path, dw_path, 
@@ -296,10 +318,19 @@ def execute_changes(arcpy, bld_path, ent_path, dw_path,
     arcpy.MakeFeatureLayer_management(bld_path, bld_layer)
     
     # Șterge înregistrări
-    # ... cod pentru ștergere ...
+    if dws_to_delete:
+        # ... cod pentru ștergere locuințe ...
+    if ents_to_delete:
+        # ... cod pentru ștergere intrări ...
+    if blds_to_delete:
+        # ... cod pentru ștergere clădiri ...
     
     # Actualizează câmpuri error=1
-    # ... cod pentru actualizare ...
+    if ents_to_update:
+        # ... cod pentru actualizare intrări ...
+    
+    # Curățare finală locuințe
+    # ... cod pentru curățare finală ...
 ```
 
 </details>
@@ -314,7 +345,7 @@ După executarea scriptului:
 - [x] Intrări problematice → marcate cu `error = 1`
 - [x] Locuințe nepopulate cu status special → șterse
 
-> **Succes:** Rezultat final
+> **Rezultat final**
 > O bază de date curățată, cu informații consistente și pregătită pentru analiză!
 
 Dacă notăm cu $B$ mulțimea tuturor clădirilor, iar cu $B'$ mulțimea clădirilor după execuția scriptului, atunci:
@@ -324,7 +355,7 @@ $$B' = \{b \in B | \neg(\text{criteriu\_ștergere}(b))\}$$
 unde $\text{criteriu\_ștergere}(b)$ reprezintă îndeplinirea uneia dintre condițiile de ștergere.
 
 ```mermaid
-pie title "Estimare reducere date după execuție"
+pie title "Estimare reducere date după execuție (exemplu)"
     "Clădiri rămase" : 75
     "Clădiri șterse" : 25
 ```
@@ -333,12 +364,12 @@ pie title "Estimare reducere date după execuție"
 
 ## ⚠️ Important!
 
-> **Avertisment:** Atenție
+> **Atenție**
 > - Scriptul modifică datele **PERMANENT**
 > - **ÎNTOTDEAUNA** creați o copie de rezervă a bazei de date înainte de a rula acest script!
 > - Scriptul trebuie rulat într-un mediu Python cu ArcGIS (ArcGIS Pro)
 
-> **Eșec/Problemă:** Posibile probleme
+> **Posibile probleme**
 > - Lipsa drepturilor de scriere în GDB
 > - Erori de relație între tabele
 > - Câmpuri lipsă sau redenumite
@@ -347,30 +378,32 @@ pie title "Estimare reducere date după execuție"
 
 ## 📝 Sumar
 
-> **Rezumat:** Scopul scriptului
-> Scriptul identifică și șterge **înregistrări invalide** din baza de date geografice pentru clădiri, intrări și locuințe.
+> **Scopul scriptului**
+> Referință: [Scop principal](#scopPrincipal)
 
-> **Sfat:** Beneficii principale
+> **Beneficii principale**
 > 1. Eliminarea înregistrărilor invalide
 > 2. Curățarea datelor pentru analiză
 > 3. Marcarea inconsistențelor pentru verificare
 
-> **Întrebare:** Cum pot rula scriptul?
+> **Cum pot rula scriptul?**
 > ```bash
 > cd /path/la/script
 > C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3\python.exe delete_validate_records.py
 > ```
 
 Timpii de execuție estimați în funcție de dimensiunea bazei de date:
-| Mărime BD | Nr. clădiri | Nr. intrări | Nr. locuințe | Timp execuție |
-|-----------|-------------|-------------|--------------|---------------|
-| Mică | $< 10^3$ | $< 10^3$ | $< 10^3$ | $t < 1$ min |
-| Medie | $10^3 - 10^4$ | $10^3 - 10^4$ | $10^3 - 10^4$ | $1 \leq t < 5$ min |
-| Mare | $10^4 - 10^5$ | $10^4 - 10^5$ | $10^4 - 10^5$ | $5 \leq t < 15$ min |
-| Foarte mare | $> 10^5$ | $> 10^5$ | $> 10^5$ | $t \geq 15$ min |
+
+| Mărime BD    | Nr. clădiri   | Nr. intrări   | Nr. locuințe  | Timp execuție      |
+|--------------|---------------|---------------|---------------|--------------------|
+| Mică         | $< 10^3$      | $< 10^3$      | $< 10^3$      | $t < 1$ min        |
+| Medie        | $10^3 - 10^4$ | $10^3 - 10^4$ | $10^3 - 10^4$ | $1 \leq t < 5$ min  |
+| Mare         | $10^4 - 10^5$ | $10^4 - 10^5$ | $10^4 - 10^5$ | $5 \leq t < 15$ min |
+| Foarte mare  | $> 10^5$      | $> 10^5$      | $> 10^5$      | $t \geq 15$ min   |
 
 ---
 
 ## ❓ Întrebări?
 
-![](assets/question_mark.jpg) 
+<!-- ![question_mark.jpg](assets/images/question_mark.jpg) -->
+<!-- Sfârșitul fișierului --> 
