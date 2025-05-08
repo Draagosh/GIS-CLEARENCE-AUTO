@@ -1,43 +1,39 @@
 ---
-cssclass: obsidian-presentation
-tags: [prezentare, arcgis, script, curățare-date]
-banner: "![[gis_banner.jpg]]"
+title: Curățarea datelor în baza geodatabase - Script delete_validate_records.py
 ---
 
 # 🧹 Curățarea datelor în baza geodatabase
 ## Script: delete_validate_records.py
 
-![[database_cleanup.png]]
+![](assets/database_cleanup.png)
 
 ---
 
 ## 🎯 Ce face acest script?
 
-> [!tip] Scop principal
+> **Sfat:** Scop principal
 > Acest script identifică și șterge **înregistrări invalide** din baza de date geografice pentru:
 > - Clădiri
 > - Intrări
 > - Locuințe
 
-^scopPrincipal
-
 ---
 
 ## 🤔 De ce avem nevoie de acest script?
 
-> [!info] Beneficii
+> **Informație:** Beneficii
 > - Elimină clădirile abandonate sau nelocuite
 > - Curăță datele pentru analize statistice mai precise
 > - Marchează cazuri problematice pentru verificare manuală
 
-> [!example] Exemplu
+> **Exemplu:**
 > Clădirile cu stare '5' (demolată) nu ar trebui să apară în analizele statistice ale populației.
 
 ---
 
 ## ⚙️ Cum funcționează?
 
-> [!abstract] Proces
+> **Rezumat:** Proces
 > Script-ul folosește pachetul `arcpy` pentru a:
 >
 > 1. Colecta datele din tabelele GDB
@@ -72,7 +68,7 @@ sequenceDiagram
 
 ## 📊 Date utilizate
 
-> [!info] Surse de date
+> **Informație:** Surse de date
 > Scriptul lucrează cu aceste 3 seturi de date în Geodatabase:
 
 | Tip | Nume în GDB | Descriere |
@@ -81,7 +77,7 @@ sequenceDiagram
 | Feature Class | `OR_ent` | Intrări |
 | Tabel | `OR_dw` | Locuințe |
 
-> [!quote] Notă importantă
+> **Citat:** Notă importantă
 > Scriptul presupune că relațiile dintre tabele sunt stabilite corect prin câmpuri GUID.
 
 $$\text{Clădire} \xrightarrow{\text{1:n}} \text{Intrare} \xrightarrow{\text{1:n}} \text{Locuință}$$
@@ -117,7 +113,7 @@ erDiagram
 
 ## 🔑 Câmpuri importante
 
-> [!info] Structura datelor
+> **Informație:** Structura datelor
 > 
 > - **ID-uri de legătură**: 
 >   - `bld_guid_id`
@@ -181,12 +177,12 @@ pie
 
 ## 🏚️ Regula 1: Locuințe nelocuite
 
-> [!note] Condiția 1
+> **Notă:** Condiția 1
 > - **Verifică**: Clădiri unde suma `dw_cnt_persons` este zero
 > - **Declanșator**: Cel puțin o locuință are `DW_purpose = 3` SAU `DW_vacant = 3`
 > - **Acțiune**: Șterge clădirea, toate intrările și toate locuințele asociate
 
-> [!success] Beneficiu
+> **Succes:** Beneficiu
 > Eliminarea completă a înregistrărilor pentru clădiri nelocuite cu statut special.
 
 Formal, o clădire $B$ va fi ștearsă dacă:
@@ -216,12 +212,12 @@ stateDiagram-v2
 
 ## 🏗️ Regula 2: Clădiri cu stare specială
 
-> [!note] Condiția 2
+> **Notă:** Condiția 2
 > - **Verifică**: Clădiri unde `BLD_status` este '3', '4', '5', sau '6'
 > - **Cazul 2.1**: Dacă `dw_cnt_persons` total = 0 → Șterge tot
 > - **Cazul 2.2**: Dacă `dw_cnt_persons` > 0 → Marchează doar intrările cu `error = 1`
 
-> [!question] De ce marcăm cu error=1?
+> **Întrebare:** De ce marcăm cu error=1?
 > Acest caz indică o discrepanță: o clădire este marcată ca abandonată/demolată, dar datele arată persoane locuind acolo.
 > Trebuie verificat manual dacă:
 > - Starea clădirii este greșită
@@ -237,25 +233,25 @@ $$\text{status\_special}(B) = \begin{cases}
 
 ## 🏢 Regula 3: Clădiri cu utilizare specială
 
-> [!note] Condiția 3
+> **Notă:** Condiția 3
 > - **Verifică**: Clădiri unde `BLD_use` este '5'
 > - **Declanșator**: `dw_cnt_persons` total = 0
 > - **Acțiune**: Șterge clădirea, toate intrările și toate locuințele asociate
 
-> [!danger] Atenție
+> **Pericol:** Atenție
 > Valoarea `BLD_use = 5` reprezintă o utilizare incompatibilă cu locuirea!
 
 ---
 
 ## 🧽 Curățare finală a locuințelor
 
-> [!important] Regula finală
+> **Important:** Regula finală
 > După aplicarea regulilor 1-3, scriptul mai face o verificare:
 > - Șterge orice locuință rămasă care are:
 >   - (`DW_purpose = 3` SAU `DW_vacant = 3`) 
 >   - ȘI `dw_cnt_persons = 0`
 
-> [!bug] Problemă rezolvată
+> **Bug/Problemă rezolvată:**
 > Această curățare finală elimină locuințele nelocuite care ar fi putut rămâne după aplicarea regulilor anterioare.
 
 ```mermaid
@@ -272,7 +268,7 @@ flowchart LR
 
 ## 🛠️ Procesul tehnic
 
-> [!abstract] Etape de execuție
+> **Rezumat:** Etape de execuție
 > 
 > 1. **Inițializare**: Verifică existența GDB, straturilor și tabelelor
 > 2. **Colectare date**: Citește datele relevante în dicționare Python
@@ -281,6 +277,7 @@ flowchart LR
 
 Calcularea persoanelor pentru o clădire:
 $$\text{total\_persons}(B) = \sum_{d \in D_B} \text{persons}(d)$$
+
 
 <details>
 <summary>Cod Python pentru execuția schimbărilor</summary>
@@ -317,7 +314,7 @@ După executarea scriptului:
 - [x] Intrări problematice → marcate cu `error = 1`
 - [x] Locuințe nepopulate cu status special → șterse
 
-> [!success] Rezultat final
+> **Succes:** Rezultat final
 > O bază de date curățată, cu informații consistente și pregătită pentru analiză!
 
 Dacă notăm cu $B$ mulțimea tuturor clădirilor, iar cu $B'$ mulțimea clădirilor după execuția scriptului, atunci:
@@ -336,12 +333,12 @@ pie title "Estimare reducere date după execuție"
 
 ## ⚠️ Important!
 
-> [!warning] Atenție
+> **Avertisment:** Atenție
 > - Scriptul modifică datele **PERMANENT**
 > - **ÎNTOTDEAUNA** creați o copie de rezervă a bazei de date înainte de a rula acest script!
 > - Scriptul trebuie rulat într-un mediu Python cu ArcGIS (ArcGIS Pro)
 
-> [!failure] Posibile probleme
+> **Eșec/Problemă:** Posibile probleme
 > - Lipsa drepturilor de scriere în GDB
 > - Erori de relație între tabele
 > - Câmpuri lipsă sau redenumite
@@ -350,15 +347,15 @@ pie title "Estimare reducere date după execuție"
 
 ## 📝 Sumar
 
-> [!abstract]- Scopul scriptului
-> [[#^scopPrincipal]]
+> **Rezumat:** Scopul scriptului
+> Scriptul identifică și șterge **înregistrări invalide** din baza de date geografice pentru clădiri, intrări și locuințe.
 
-> [!tip]- Beneficii principale
+> **Sfat:** Beneficii principale
 > 1. Eliminarea înregistrărilor invalide
 > 2. Curățarea datelor pentru analiză
 > 3. Marcarea inconsistențelor pentru verificare
 
-> [!question]- Cum pot rula scriptul?
+> **Întrebare:** Cum pot rula scriptul?
 > ```bash
 > cd /path/la/script
 > C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3\python.exe delete_validate_records.py
@@ -376,4 +373,4 @@ Timpii de execuție estimați în funcție de dimensiunea bazei de date:
 
 ## ❓ Întrebări?
 
-![[question_mark.jpg]] 
+![](assets/question_mark.jpg) 
