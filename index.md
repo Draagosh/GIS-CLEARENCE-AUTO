@@ -3,6 +3,8 @@
 # 🧹 Curățarea datelor în baza geodatabase
 ## Script: delete_validate_records.py
 
+
+
 ---
 
 ## 🎯 Ce face acest script?
